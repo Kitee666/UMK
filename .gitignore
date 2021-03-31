@@ -1,0 +1,9 @@
+Monograficzny/*.pdf
+Monograficzny/build*
+Eksploracja/.idea/
+*__pycache__*
+*.exe
+Skalowalne/*.png
+Skalowalne/Books
+Skalowalne/.idea
+Skalowalne/*/*.png
