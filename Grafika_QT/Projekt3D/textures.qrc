@@ -1,13 +1,5 @@
 <RCC>
     <qresource prefix="/">
-        <file>FrontUpRight.png</file>
-        <file>FrontUpLeft.png</file>
-        <file>FrontDownRight.png</file>
-        <file>FrontDownLeft.png</file>
-        <file>BackUpRight.png</file>
-        <file>BackUpLeft.png</file>
-        <file>BackDownRight.png</file>
-        <file>BackDownLeft.png</file>
         <file>logoDown.png</file>
         <file>logoUp.png</file>
         <file>ziemia.jpg</file>
