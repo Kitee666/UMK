@@ -1,11 +1,9 @@
 Monograficzny/*.pdf
 Monograficzny/build*
-Eksploracja/.idea/
+*.idea
 *__pycache__*
 *.exe
-Skalowalne/*.png
-Skalowalne/Books
-Skalowalne/.idea
 Skalowalne/*/*.png
+Skalowalne/Books
 Angielski/
 *.pro.user
