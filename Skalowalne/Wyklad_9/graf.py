@@ -33,7 +33,6 @@ show(graf_vert, graf_connect)
 
 # Krok zielony
 
-# TO FIX!!
 copy_connect = graf_connect.copy()
 for v in vert:
     neigh = [copy_connect[i] for i in graf_edges[v]]
@@ -43,14 +42,13 @@ for v in vert:
 print("Krok zielony")
 show(graf_vert, graf_connect)
 
-# Krok czerwony
+# Krok pomaranczowy
 copy_connect = graf_connect.copy()
 for v in vert:
     graf_connect[v] = copy_connect[copy_connect[v]]
 
-print("Krok czerwony")
+print("Krok pomaranczowy")
 show(graf_vert, graf_connect)
-
 
 # Krok zielony
 copy_connect = graf_connect.copy()
@@ -62,10 +60,10 @@ for v in vert:
 print("Krok zielony 2")
 show(graf_vert, graf_connect)
 
-# Krok czerwony
+# Krok pomaranczowy
 copy_connect = graf_connect.copy()
 for v in vert:
     graf_connect[v] = copy_connect[copy_connect[v]]
 
-print("Krok czerwony 2")
+print("Krok pomaranczowy 2")
 show(graf_vert, graf_connect)

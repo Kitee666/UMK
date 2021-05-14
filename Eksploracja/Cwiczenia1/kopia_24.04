@@ -1,0 +1,251 @@
+install.packages("caret")
+install.packages("C50")
+install.packages("ROCR")
+install.packages("randomForest")
+
+library(randomForest)
+library(ROCR)
+library(caret)
+library(C50)
+library(caret)
+library(reshape2)
+
+# https://archive.ics.uci.edu/ml/datasets/bank+marketing
+# https://towardsdatascience.com/machine-learning-case-study-a-data-driven-approach-to-predict-the-success-of-bank-telemarketing-20e37d46c31c
+
+
+
+# Inicjalizacja
+#-------------------------------------------
+set.seed(291951)
+bank = read.csv('./bank_marketing_training.txt', sep = ',')
+n<-dim(bank)
+bank$Index<-c(1:n[1])
+podzial<-createDataPartition(bank$Index, p=0.7, list=FALSE)
+#-------------------------------------------
+# Sprawdzenie danych
+#-------------------------------------------
+table(bank[,c('job', 'response')])
+table(bank[,c('marital', 'response')])
+table(bank[,c('education', 'response')])
+table(bank[,c('default', 'response')])
+table(bank[,c('housing', 'response')])
+table(bank[,c('loan', 'response')])
+table(bank[,c('contact', 'response')])
+table(bank[,c('month', 'response')])
+table(bank[,c('day_of_week', 'response')])
+table(bank[,c('previous_outcome', 'response')])
+#-------------------------------------------
+# Przygotowanie danych
+#-------------------------------------------
+bank$response <- ifelse(bank$response=='yes', 1, 0)
+bank$previous_outcome <- ifelse(bank$previous_outcome=='success', 1, 0)
+bank$marital <- ifelse(bank$marital=='married', 1, 0)
+bank$default <- ifelse(bank$default=='yes', 1, 0)
+bank$housing <- ifelse(bank$housing=='yes', 1, 0)
+bank$loan <- ifelse(bank$loan=='yes', 1, 0)
+bank$contact <- ifelse(bank$contact=='cellular', 1, 0)
+bank$education <- ifelse(bank$education %in% c('high.school', 'professional.course', 'university.degree'), 1, 0)
+bank$job <- ifelse(bank$job %in% c('admin.', 'blue-collar', 'entrepreneur', 'housemaid',
+                                   'management', 'self-employed', 'services', 'technician'), 1, 0)
+bank$day_of_week <- ifelse(bank$day_of_week %in% c('mon', 'tue', 'wed'), 1, 0)
+bank$month <- ifelse(bank$month %in% c('aug', 'jul', 'jun', 'may', 'sep'), 1, 0)
+
+
+library(corrplot)
+corrplot(cor(bank), method="pie", type="upper", order="hclust")
+
+bank$job<-(factor(bank$job))
+bank$marital<-(factor(bank$marital))
+bank$education<-(factor(bank$education))
+bank$default<-(factor(bank$default))
+bank$housing<-(factor(bank$housing))
+bank$loan<-(factor(bank$loan))
+bank$contact<-(factor(bank$contact))
+bank$month<-(factor(bank$month))
+bank$day_of_week<-(factor(bank$day_of_week))
+bank$previous_outcome<-(factor(bank$previous_outcome))
+bank$response<-(factor(bank$response))
+#-------------------------------------------
+
+# 3. Drzewo C5.0 dla wszystkich predyktorów
+#-------------------------------------------
+C50<-C5.0(response~age+job+marital+education+default+housing+loan+contact+month+day_of_week+duration+
+            campaign+days_since_previous++previous+previous_outcome+emp.var.rate+cons.price.idx+
+            cons.conf.idx+euribor3m+nr.employed,
+          data=bank[podzial,],
+          control=C5.0Control(minCases = 1))
+summary(C50)
+#-------------------------------------------
+
+# 3.1. Drzewo C5.0 Rezygnacja z predyktorów ze względu na małą ważność 
+#-------------------------------------------
+C50<-C5.0(response~duration+previous_outcome+nr.employed, data=bank[podzial,], control=C5.0Control(minCases = 75))
+summary(C50)
+plot(C50)
+#-------------------------------------------
+
+# Dane testowe i treningowe
+#-------------------------------------------
+x_train_c50<-bank[podzial,c('duration', 'previous_outcome', 'nr.employed')]
+x_test_c50<-bank[-podzial,c('duration', 'previous_outcome', 'nr.employed')]
+
+y_train_c50<-bank[podzial,'response'] 
+y_test_c50<-bank[-podzial,'response']
+
+t<-table(bank$response)
+proporcja=c(round(t[1]/n[1],2),round(t[2]/n[1],2))
+proporcja
+#-------------------------------------------
+
+# Sprawdzenie na danych treningowych
+#-------------------------------------------
+y_pred_c50_train<-predict(C50,x_train_c50)
+zest_c50_train=data.frame(y_train_c50,y_pred_c50_train)
+conf_mat_train_c50<-table(y_train_c50,y_pred_c50_train)
+czulosc_train_c50<-(conf_mat_train_c50[2,2])/(conf_mat_train_c50[2,2]+conf_mat_train_c50[2,1])
+trafnosc_train_c50<-(conf_mat_train_c50[1,1]+conf_mat_train_c50[2,2])/nrow(x_train_c50)
+swoistosc_train_c50<-(conf_mat_train_c50[1,1])/(conf_mat_train_c50[1,1]+conf_mat_train_c50[1,2])
+
+czulosc_train_c50
+trafnosc_train_c50
+swoistosc_train_c50
+#-------------------------------------------
+
+# Sprawdzenie na danych testowych
+#-------------------------------------------
+y_pred_c50_test<-predict(C50,x_test_c50)
+zest_c50_test=data.frame(y_test_c50,y_pred_c50_test)
+conf_mat_test_c50<-table(y_test_c50,y_pred_c50_test)
+czulosc_test_c50<-(conf_mat_test_c50[2,2])/(conf_mat_test_c50[2,2]+conf_mat_test_c50[2,1])
+trafnosc_test_c50<-(conf_mat_test_c50[1,1]+conf_mat_test_c50[2,2])/nrow(x_test_c50)
+swoistosc_test_c50<-(conf_mat_test_c50[1,1])/(conf_mat_test_c50[1,1]+conf_mat_test_c50[1,2])
+
+czulosc_test_c50
+trafnosc_test_c50
+swoistosc_test_c50
+#-------------------------------------------
+
+# C5.0 Krzywa ROC dla proby treningowej
+#-------------------------------------------
+predict_wykres_c50_train<-prediction(c(y_pred_c50_train),y_train_c50)
+wykres_ROC_c50_train<-performance(predict_wykres_c50_train,"sens","fpr")
+windows(5,5)
+plot(wykres_ROC_c50_train,xlab="1-Swoistosc", ylab="Czulosc")
+abline(0,1,lty=2)
+#-------------------------------------------
+
+# C5.0 Krzywa ROC dla proby testowej
+#-------------------------------------------
+predict_wykres_c50_test<-prediction(c(y_pred_c50_test),y_test_c50)
+wykres_ROC_c50_test<-performance(predict_wykres_c50_test,"sens","fpr")
+windows(5,5)
+plot(wykres_ROC_c50_test,xlab="1-Swoistosc", ylab="Czulosc")
+abline(0,1,lty=2)
+#-------------------------------------------
+
+
+# 4. Las Losowy dla wszystkich predyktorów
+#-------------------------------------------
+las<-randomForest(response~age+job+marital+education+default+housing+loan+contact+month+day_of_week+duration+
+                    campaign+days_since_previous++previous+previous_outcome+emp.var.rate+cons.price.idx+
+                    cons.conf.idx+euribor3m+nr.employed,data=bank[podzial,],ntree=100)
+windows(5,5)
+varImpPlot(las)
+#-------------------------------------------
+
+# 4.1. Las Losowy Rezygnacja z predyktorów ze względu na małą ważność  
+#-------------------------------------------
+las<-randomForest(response~duration+euribor3m+age+job+nr.employed,data=bank[podzial,],ntree=100)
+#-------------------------------------------
+
+# Wykres błedu klasyfikacji w zaleznosci od liczby drzew.
+#-------------------------------------------
+windows(5,5)
+plot(las)
+leg <- c("0","1","OBB" )
+legend("center",legend=leg, col=c("red","green","black"), lty=1,
+       pch=20, cex=0.7,inset=0)
+#-------------------------------------------
+
+# 4.2 Las Losowy Zmiejszenie liczby drzew
+#-------------------------------------------
+las<-randomForest(response~duration+euribor3m+age+job+nr.employed,data=bank[podzial,],ntree=40)
+
+x_train_las<-bank[podzial,c('duration', 'euribor3m', 'age', 'job', 'nr.employed')]
+x_test_las<-bank[-podzial,c('duration', 'euribor3m', 'age', 'job', 'nr.employed')]
+
+y_train_las<-bank[podzial,'response'] 
+y_test_las<-bank[-podzial,'response']
+#-------------------------------------------
+
+# TEST !!!
+las<-randomForest(response~duration+previous_outcome+nr.employed,data=bank[podzial,],ntree=40, nodesize=50)
+x_train_las<-bank[podzial,c('duration', 'previous_outcome', 'nr.employed')]
+x_test_las<-bank[-podzial,c('duration', 'previous_outcome', 'nr.employed')]
+
+#-------------------------------------------
+#-------------------------------------------
+# Sprawdzenie na danych treningowych
+#-------------------------------------------
+y_pred_las_train<-predict(las,x_train_las)
+zest_las_train=data.frame(y_train_las,y_pred_las_train)
+conf_mat_train_las<-table(y_train_las,y_pred_las_train)
+czulosc_train_las<-(conf_mat_train_las[2,2])/(conf_mat_train_las[2,2]+conf_mat_train_las[2,1])
+trafnosc_train_las<-(conf_mat_train_las[1,1]+conf_mat_train_las[2,2])/nrow(x_train_las)
+swoistosc_train_las<-(conf_mat_train_las[1,1])/(conf_mat_train_las[1,1]+conf_mat_train_las[1,2])
+
+czulosc_train_las
+trafnosc_train_las
+swoistosc_train_las
+#-------------------------------------------
+
+# Sprawdzenie na danych testowych
+#-------------------------------------------
+y_pred_las_test<-predict(las,x_test_las)
+zest_las_test=data.frame(y_test_las,y_pred_las_test)
+conf_mat_test_las<-table(y_test_las,y_pred_las_test)
+czulosc_test_las<-(conf_mat_test_las[2,2])/(conf_mat_test_las[2,2]+conf_mat_test_las[2,1])
+trafnosc_test_las<-(conf_mat_test_las[1,1]+conf_mat_test_las[2,2])/nrow(x_test_las)
+swoistosc_test_las<-(conf_mat_test_las[1,1])/(conf_mat_test_las[1,1]+conf_mat_test_las[1,2])
+
+czulosc_test_las
+trafnosc_test_las
+swoistosc_test_las
+#-------------------------------------------
+
+# Las Losowy Krzywa ROC dla proby treningowej
+#-------------------------------------------
+predict_wykres_las_train<-prediction(c(y_pred_las_train),y_train_las)
+wykres_ROC_las_train<-performance(predict_wykres_las_train,"sens","fpr")
+windows(5,5)
+plot(wykres_ROC_las_train,xlab="1-Swoistosc", ylab="Czulosc")
+abline(0,1,lty=2)
+#-------------------------------------------
+
+# Las Losowy Krzywa ROC dla proby testowej
+#-------------------------------------------
+predict_wykres_las_test<-prediction(c(y_pred_las_test),y_test_las)
+wykres_ROC_las_test<-performance(predict_wykres_las_test,"sens","fpr")
+windows(5,5)
+plot(wykres_ROC_las_test,xlab="1-Swoistosc", ylab="Czulosc")
+abline(0,1,lty=2)
+#-------------------------------------------
+
+# Zamiana as.numeric
+#-------------------------------------------
+bank$job<-as.numeric(factor(bank$job))-1
+bank$marital<-as.numeric(factor(bank$marital))-1
+bank$education<-as.numeric(factor(bank$education))-1
+bank$default<-as.numeric(factor(bank$default))-1
+bank$housing<-as.numeric(factor(bank$housing))-1
+bank$loan<-as.numeric(factor(bank$loan))-1
+bank$contact<-as.numeric(factor(bank$contact))-1
+bank$month<-as.numeric(factor(bank$month))-1
+bank$day_of_week<-as.numeric(factor(bank$day_of_week))-1
+bank$previous_outcome<-as.numeric(factor(bank$previous_outcome))-1
+bank$response<-as.numeric(factor(bank$response))-1
+#-------------------------------------------
+
+library(corrplot)
+corrplot(cor(bank))

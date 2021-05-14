@@ -1,0 +1,181 @@
+#install.packages("caret")
+#install.packages("C50")
+#install.packages("ROCR")
+#install.packages("randomForest")
+#install.packages('corrplot')
+
+library(randomForest)
+library(ROCR)
+library(caret)
+library(C50)
+library(caret)
+library(corrplot)
+
+# Inicjalizacja
+#-------------------------------------------
+set.seed(291951)
+bank = read.csv('./bank_marketing_training.txt')
+n<-dim(bank)
+bank$Index<-c(1:n[1])
+podzial<-createDataPartition(bank$Index, p=0.7, list=FALSE)
+#-------------------------------------------
+# Przygotowanie danych
+#-------------------------------------------
+
+t<-table(bank$response)
+proporcja=c(round(t[1]/n[1],2),round(t[2]/n[1],2))
+proporcja
+
+bank$marital <- factor(bank$marital)
+bank$default <- ifelse(bank$default=='yes', 1, 0)
+bank$housing <- ifelse(bank$housing=='yes', 1, 0)
+bank$loan <- ifelse(bank$loan=='yes', 1, 0)
+bank$contact <- ifelse(bank$contact=='cellular', 1, 0)
+
+bank$response <- factor(bank$response)
+bank$previous_outcome <- factor(bank$previous_outcome)
+bank$education <- factor(bank$education)
+bank$job <- factor(bank$job)
+bank$day_of_week <- factor(bank$day_of_week)
+bank$month <- factor(bank$month)
+#-------------------------------------------
+
+# Macierz korelacji
+#-------------------------------------------
+corrplot(cor(bank[,c(1, 5:8, 11, 12, 14, 16:20)]), method="pie", type="upper", order="hclust")
+#-------------------------------------------
+
+# 3. Drzewo C5.0 dla nieskorelowanych predyktorow
+#-------------------------------------------
+C50<-C5.0(response~age+job+marital+education+default+housing+loan+contact+month+day_of_week+duration+
+            campaign+previous+previous_outcome+cons.price.idx+
+            cons.conf.idx+nr.employed,
+          data=bank[podzial,],
+          control=C5.0Control(minCases = 75))
+summary(C50)
+#-------------------------------------------
+# 4. Las Losowy dla nieskorelowanych predyktorów
+#-------------------------------------------
+las<-randomForest(response~age+job+marital+education+default+housing+loan+contact+month+day_of_week+duration+
+                    campaign+previous+previous_outcome+cons.price.idx+
+                    cons.conf.idx+nr.employed,
+                  data=bank[podzial,],
+                  ntree=100,
+                  nodesize=75)
+varImpPlot(las)
+#-------------------------------------------
+
+# Dane testowe i treningowe
+#-------------------------------------------
+x_train<-bank[podzial,c('duration', 'previous_outcome', 'nr.employed', 'month')]
+x_test<-bank[-podzial,c('duration', 'previous_outcome', 'nr.employed', 'month')]
+
+y_train<-bank[podzial,'response'] 
+y_test<-bank[-podzial,'response']
+#-------------------------------------------
+
+# 3.1. Drzewo C5.0 Rezygnacja z predyktorów ze wzglêdu na ma³¹ wa¿noœæ 
+#-------------------------------------------
+C50<-C5.0(response~duration+previous_outcome+nr.employed+month,
+          data=bank[podzial,],
+          control=C5.0Control(minCases = 75))
+summary(C50)
+plot(C50)
+#-------------------------------------------
+
+# 4.1. Las Losowy Rezygnacja z predyktorów ze wzglêdu na ma³¹ wa¿noœæ 
+#-------------------------------------------
+las<-randomForest(response~duration+previous_outcome+nr.employed+month,data=bank[podzial,],
+                  ntree=100,
+                  nodesize=75)
+las
+#-------------------------------------------
+
+# Wykres b³edu klasyfikacji w zaleznosci od liczby drzew.
+#-------------------------------------------
+plot(las)
+leg <- c("0","1","OBB" )
+legend("center",legend=leg, col=c("red","green","black"), lty=1,
+       pch=20, cex=0.7,inset=0)
+#-------------------------------------------
+
+# C5.0 Sprawdzenie na danych treningowych
+#-------------------------------------------
+y_pred_c50_train<-predict(C50,x_train)
+conf_mat_train_c50<-table(y_train,y_pred_c50_train)
+czulosc_train_c50<-(conf_mat_train_c50[2,2])/(conf_mat_train_c50[2,2]+conf_mat_train_c50[2,1])
+trafnosc_train_c50<-(conf_mat_train_c50[1,1]+conf_mat_train_c50[2,2])/nrow(x_train)
+swoistosc_train_c50<-(conf_mat_train_c50[1,1])/(conf_mat_train_c50[1,1]+conf_mat_train_c50[1,2])
+#-------------------------------------------
+
+# C5.0 Sprawdzenie na danych testowych
+#-------------------------------------------
+y_pred_c50_test<-predict(C50,x_test)
+conf_mat_test_c50<-table(y_test,y_pred_c50_test)
+czulosc_test_c50<-(conf_mat_test_c50[2,2])/(conf_mat_test_c50[2,2]+conf_mat_test_c50[2,1])
+trafnosc_test_c50<-(conf_mat_test_c50[1,1]+conf_mat_test_c50[2,2])/nrow(x_test)
+swoistosc_test_c50<-(conf_mat_test_c50[1,1])/(conf_mat_test_c50[1,1]+conf_mat_test_c50[1,2])
+#-------------------------------------------
+
+# Las losowy Sprawdzenie na danych treningowych
+#-------------------------------------------
+y_pred_las_train<-predict(las,x_train)
+conf_mat_train_las<-table(y_train,y_pred_las_train)
+czulosc_train_las<-(conf_mat_train_las[2,2])/(conf_mat_train_las[2,2]+conf_mat_train_las[2,1])
+trafnosc_train_las<-(conf_mat_train_las[1,1]+conf_mat_train_las[2,2])/nrow(x_train)
+swoistosc_train_las<-(conf_mat_train_las[1,1])/(conf_mat_train_las[1,1]+conf_mat_train_las[1,2])
+
+#-------------------------------------------
+
+# Las losowy Sprawdzenie na danych testowych
+#-------------------------------------------
+y_pred_las_test<-predict(las,x_test)
+conf_mat_test_las<-table(y_test,y_pred_las_test)
+czulosc_test_las<-(conf_mat_test_las[2,2])/(conf_mat_test_las[2,2]+conf_mat_test_las[2,1])
+trafnosc_test_las<-(conf_mat_test_las[1,1]+conf_mat_test_las[2,2])/nrow(x_test)
+swoistosc_test_las<-(conf_mat_test_las[1,1])/(conf_mat_test_las[1,1]+conf_mat_test_las[1,2])
+#-------------------------------------------
+
+
+# C5.0 Krzywa ROC dla proby treningowej
+#-------------------------------------------
+predict_wykres_c50_train<-prediction(c(y_pred_c50_train),y_train)
+wykres_ROC_c50_train<-performance(predict_wykres_c50_train,"sens","fpr")
+plot(wykres_ROC_c50_train,xlab="1-Swoistosc", ylab="Czulosc")
+abline(0,1,lty=2)
+#-------------------------------------------
+
+# C5.0 Krzywa ROC dla proby testowej
+#-------------------------------------------
+predict_wykres_c50_test<-prediction(c(y_pred_c50_test),y_test)
+wykres_ROC_c50_test<-performance(predict_wykres_c50_test,"sens","fpr")
+plot(wykres_ROC_c50_test,xlab="1-Swoistosc", ylab="Czulosc")
+abline(0,1,lty=2)
+#-------------------------------------------
+
+# Las Losowy Krzywa ROC dla proby treningowej
+#-------------------------------------------
+predict_wykres_las_train<-prediction(c(y_pred_las_train),y_train)
+wykres_ROC_las_train<-performance(predict_wykres_las_train,"sens","fpr")
+plot(wykres_ROC_las_train,xlab="1-Swoistosc", ylab="Czulosc")
+abline(0,1,lty=2)
+#-------------------------------------------
+
+# Las Losowy Krzywa ROC dla proby testowej
+#-------------------------------------------
+predict_wykres_las_test<-prediction(c(y_pred_las_test),y_test)
+wykres_ROC_las_test<-performance(predict_wykres_las_test,"sens","fpr")
+plot(wykres_ROC_las_test,xlab="1-Swoistosc", ylab="Czulosc")
+abline(0,1,lty=2)
+
+#-------------------------------------------
+
+# Zebranie wyników
+#-------------------------------------------
+Name <- c('C5.0 Train', 'C5.0 Test', 'Las Train', 'Las Test')
+Czulosc <- c(czulosc_train_c50, czulosc_test_c50, czulosc_train_las, czulosc_test_las)
+Trafnosc <- c(trafnosc_train_c50, trafnosc_test_c50, trafnosc_train_las, trafnosc_test_las)
+Swoistosc <- c(swoistosc_train_c50, swoistosc_test_c50, swoistosc_train_las, swoistosc_test_las)
+
+Wynik <- data.frame(Name, Czulosc, Trafnosc, Swoistosc)
+#-------------------------------------------
