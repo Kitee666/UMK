@@ -24,23 +24,29 @@ private:
     Ui::MainWindow *ui;
     QImage *img;
     QImage *copy;
+    QImage *img2;
+    QImage *copy2;
     int szer;
     int wys;
     int poczX;
     int poczY;
+    int szer2;
+    int wys2;
+    int poczX2;
+    int poczY2;
     int licznik = 0;
     vector<pair<double, double> > punkty;
     vector<pair<double, double> >::iterator przesun;
     vector<pair<double, double> > tmp;
     bool kontrola = false;
     bool usun = false;
-    double steps = 0.5;
-    void prosta(int, int, int, int, int, int, int);
+    double steps = 0;
+    int radius = 200;
     // Deklaracje funkcji
     void czysc();
     void sprawdz(int x, int y);
-    void rysujPiksel(int x, int y, int r, int g, int b);
-    void rysujPunkty(int x, int y, int r, int g, int b, int size);
+    void rysujPiksel(unsigned char *ptr, int x, int y, int r, int g, int b);
+    void rysujPunkty(unsigned char *ptr, int x, int y, int r, int g, int b, int size);
     void punkt();
     void krzywe();
     vector<pair<double, double> > wylicz(int count, vector<pair<double, double> > points, double step);
@@ -56,5 +62,6 @@ private slots:
     void on_pushButton_clicked();
     void on_checkBox_stateChanged(int arg1);
     void on_horizontalSlider_valueChanged(int value);
+    void on_dial_valueChanged(int value);
 };
 #endif // MAINWINDOW_H

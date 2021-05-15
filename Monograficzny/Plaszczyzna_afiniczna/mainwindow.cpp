@@ -1,7 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include <QDebug>
-
+#include <cmath>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -12,17 +12,20 @@ MainWindow::MainWindow(QWidget *parent)
     wys = ui->rysujFrame->height();
     poczX = ui->rysujFrame->x();
     poczY = ui->rysujFrame->y();
+    szer2 = ui->rysujFrame_2->width();
+    wys2 = ui->rysujFrame_2->height();
+    poczX2 = ui->rysujFrame_2->x();
+    poczY2 = ui->rysujFrame_2->y();
     img = new QImage(szer,wys,QImage::Format_RGB32);
     copy = new QImage(szer,wys,QImage::Format_RGB32);
+    img2 = new QImage(szer,wys,QImage::Format_RGB32);
+    copy2 = new QImage(szer,wys,QImage::Format_RGB32);
     czysc();
-    *copy = img->copy();
 }
-
 MainWindow::~MainWindow()
 {
     delete ui;
 }
-
 void MainWindow::on_exitButton_clicked()
 {
     qApp->quit();
@@ -31,6 +34,7 @@ void MainWindow::paintEvent(QPaintEvent*)
 {
     QPainter p(this);
     p.drawImage(poczX,poczY,*img);
+    p.drawImage(poczX2,poczY2,*img2);
 }
 void MainWindow::on_cleanButton_clicked()
 {
@@ -39,8 +43,6 @@ void MainWindow::on_cleanButton_clicked()
 }
 void MainWindow::czysc()
 {
-    unsigned char *ptr;
-    ptr = img->bits();
     licznik = 0;
     kontrola = false;
     punkty.clear();
@@ -49,18 +51,21 @@ void MainWindow::czysc()
     {
         for(j=0; j<szer; j++)
         {
-            ptr[szer*4*i + 4*j] = 255;
-            ptr[szer*4*i + 4*j + 1] = 255;
-            ptr[szer*4*i + 4*j + 2] = 255;
+            rysujPiksel(img->bits(), i, j, 255, 255, 255);
+            rysujPiksel(img2->bits(), i, j, 255, 255, 255);
         }
     }
+    rysujPunkty(img->bits(), 200, 200, 0, 255, 0, 5);
+    rysujPunkty(img2->bits(), 200, 200, 0, 255, 0, 5);
     *copy = img->copy();
+    *copy2 = img2->copy();
 }
 void MainWindow::mousePressEvent(QMouseEvent *event)
 {
     int x = event->x();
     int y = event->y();
     *img = copy->copy();
+    *img2 = copy2->copy();
     x -= poczX;
     y -= poczY;
     if(event->button() == Qt::LeftButton)
@@ -87,6 +92,7 @@ void MainWindow::mouseReleaseEvent(QMouseEvent *event)
     int x = event->x();
     int y = event->y();
     *img = copy->copy();
+    *img2 = copy2->copy();
     x -= poczX;
     y -= poczY;
     if(event->button() == Qt::LeftButton)
@@ -123,6 +129,7 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event)
     int x = event->x();
     int y = event->y();
     *img = copy->copy();
+    *img2 = copy2->copy();
     x -= poczX;
     y -= poczY;
     if(event->button() == Qt::LeftButton)
@@ -141,59 +148,24 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event)
     punkt();
     update();
 }
-void MainWindow::rysujPunkty(int x, int y, int r, int g, int b, int size){
-    int i,j;
-    for(i = x - size; i <= x + size; i++){
-        for(j = y - size; j <= y + size; j++){
-            rysujPiksel(i,j,r,g,b);
+void MainWindow::rysujPunkty(unsigned char *ptr, int x, int y, int r, int g, int b, int size)
+{
+    int i, j;
+    for (i = x - size; i <= x + size; i++) {
+        for (j = y - size; j <= y + size; j++) {
+            rysujPiksel(ptr, i, j, r, g, b);
         }
     }
 }
-void MainWindow::rysujPiksel(int x, int y, int r, int g, int b){
-    unsigned char *ptr;
-    ptr = img->bits();
-    if(x >= 0 && y >= 0 && x < szer && y < wys){
+void MainWindow::rysujPiksel(unsigned char *ptr, int x, int y, int r, int g, int b)
+{
+    if (x >= 0 && y >= 0 && x < szer && y < wys) {
         ptr[szer * 4 * y + 4 * x] = static_cast<unsigned char>(b);
         ptr[szer * 4 * y + 4 * x + 1] = static_cast<unsigned char>(g);
         ptr[szer * 4 * y + 4 * x + 2] = static_cast<unsigned char>(r);
     }
 }
-void MainWindow::prosta(int startx, int starty, int koniecx, int koniecy,int r, int g, int c){
-    double a, b;
-    int pom;
-    int i;
-    if(abs(startx - koniecx) > abs(starty - koniecy)){
-        if(startx > koniecx){
-            pom = startx;
-            startx = koniecx;
-            koniecx = pom;
-            pom = starty;
-            starty = koniecy;
-            koniecy = pom;
-        }
-        a = (koniecy - starty) / static_cast<double>(koniecx - startx);
-        b = starty - a * startx;
-        for(i = startx; i <= koniecx; i++){
-            pom = static_cast<int>(a * i + b);
-            rysujPiksel(i,pom,r,g,c);
-        }
-    } else {
-        if(starty > koniecy){
-            pom = startx;
-            startx = koniecx;
-            koniecx = pom;
-            pom = starty;
-            starty = koniecy;
-            koniecy = pom;
-        }
-        a = (koniecx - startx) / static_cast<double> (koniecy - starty);
-        b = startx - a * starty;
-        for(i = starty; i <= koniecy; i++){
-            pom = static_cast<int>(a * i + b);
-            rysujPiksel(pom,i,r,g,c);
-        }
-    }
-}
+
 void MainWindow::sprawdz(int x, int y){
     for(vector<pair<double, double> >::iterator it = punkty.begin(); it != punkty.end(); it++){
         if(it->first + 5 >= x && it->first - 5 <= x && it->second + 5 >= y && it->second - 5 <= y){
@@ -207,13 +179,15 @@ void MainWindow::punkt(){
     if(punkty.empty())
         return;
     for(vector<pair<double, double> >::iterator it = punkty.begin(); it != punkty.end(); it++){
-        rysujPunkty(static_cast<int>(it->first),static_cast<int>(it->second), 255, 0, 0, 5);
+        rysujPunkty(img->bits(), static_cast<int>(it->first),static_cast<int>(it->second), 255, 0, 0, 5);
     }
 }
 void MainWindow::krzywe(){
     vector<pair<double, double> > help, output;
-    pair<double,double> pkt_1, pkt_2;
+    pair<double,double> pkt_1;
     double t = 0;
+    double x, y, z, odl;
+    double alfa = steps / 180.0 * M_PI;
     vector<pair<double, double> >::iterator it;
     if(punkty.empty())
         return;
@@ -222,19 +196,25 @@ void MainWindow::krzywe(){
         it = help.begin();
         output.push_back(*(it));
         pkt_1 = *(it);
-        //rysujPunkty(static_cast<int>(pkt_1.first), static_cast<int>(pkt_1.second), 0, 0, 255, 2);
-        //t += steps;
+        rysujPiksel(img->bits(), static_cast<int>(pkt_1.first), static_cast<int>(pkt_1.second), 0, 0, 255);
+        x = pkt_1.first - szer / 2.0;
+        y = pkt_1.second - wys / 2.0;
+        z = sin(alfa) * x + cos(alfa) * radius;
+        x = cos(alfa) * x - sin(alfa) * radius;
+        odl = sqrt(x * x + y * y + z * z);
+        x = x * radius / odl;
+        y = y * radius / odl;
+        if(z == 0.0){
+            rysujPiksel(img2->bits(), static_cast<int>(x + szer2/2.0), static_cast<int>(y + szer2 / 2.0), 0, 0, 255);
+            rysujPiksel(img2->bits(), static_cast<int>(-x + szer2/2.0), static_cast<int>(-y + szer2 / 2.0), 0, 0, 255);
+        } else  if(z > 0.0) {
+            rysujPiksel(img2->bits(), static_cast<int>(x + szer2/2.0), static_cast<int>(y + szer2 / 2.0), 0, 0, 255);
+        } else {
+            rysujPiksel(img2->bits(), static_cast<int>(-x + szer2/2.0), static_cast<int>(-y + szer2 / 2.0), 0, 0, 255);
+        }
+
         t += 0.001;
     }
-    pkt_1 = *(output.begin());
-    for(it = output.begin(); it != output.end();it++) {
-        pkt_2 = *(it);
-        prosta(static_cast<int>(pkt_1.first), static_cast<int>(pkt_1.second), static_cast<int>(pkt_2.first), static_cast<int>(pkt_2.second), 0, 0, 0);
-        pkt_1 = pkt_2;
-    }
-    it = punkty.end();
-    pkt_2 = *(it - 1);
-    prosta(static_cast<int>(pkt_1.first), static_cast<int>(pkt_1.second), static_cast<int>(pkt_2.first), static_cast<int>(pkt_2.second), 0, 0, 0);
 }
 
 vector<pair<double, double> > MainWindow::wylicz(int count, vector<pair<double, double> > points, double step)
@@ -279,8 +259,17 @@ void MainWindow::on_checkBox_stateChanged(int arg1)
 
 void MainWindow::on_horizontalSlider_valueChanged(int value)
 {
-    steps = static_cast<double>(value) / 1000.0;
-    *img = copy->copy();
+//    steps = static_cast<double>(value) / 1000.0;
+//    *img = copy->copy();
+//    krzywe();
+//    punkt();
+//    update();
+}
+
+void MainWindow::on_dial_valueChanged(int value)
+{
+    steps = value;
+    *img2 = copy2->copy();
     krzywe();
     punkt();
     update();
