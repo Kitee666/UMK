@@ -4,22 +4,31 @@ from pyspark.sql import SparkSession
 
 
 def reducer(row):
-    row_a = list(filter(lambda r: r[0] == 'A', row[1]))
-    col_b = list(filter(lambda r: r[0] == 'B', row[1]))
-    row_a.sort(key=lambda it: it[1])
-    col_b.sort(key=lambda it: it[1])
-    j = 0
-    i = 0
+    key, values = row[0], row[1]
     out = 0.0
-    while i < len(row_a) and j < len(col_b):
-        if row_a[i][1] > col_b[j][1]:
-            j += 1
-        elif row_a[i][1] < col_b[j][1]:
-            i += 1
+    value_dict = {}
+    for i in values:
+        if i[1] not in value_dict:
+            value_dict[i[1]] = i[2]
         else:
-            out += row_a[i][2] * col_b[j][2]
-            i += 1
-            j += 1
+            out += value_dict[i[1]] * i[2]
+    # Wersja 2
+    # row_a = list(filter(lambda r: r[0] == 'A', row[1]))
+    # col_b = list(filter(lambda r: r[0] == 'B', row[1]))
+    # row_a.sort(key=lambda it: it[1])
+    # col_b.sort(key=lambda it: it[1])
+    # j = 0
+    # i = 0
+    # out = 0.0
+    # while i < len(row_a) and j < len(col_b):
+    #     if row_a[i][1] > col_b[j][1]:
+    #         j += 1
+    #     elif row_a[i][1] < col_b[j][1]:
+    #         i += 1
+    #     else:
+    #         out += row_a[i][2] * col_b[j][2]
+    #         i += 1
+    #         j += 1
     if out != 0.0:
         return [(row[0], out)]
     return []

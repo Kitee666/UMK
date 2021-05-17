@@ -26,6 +26,7 @@ if __name__ == "__main__":
         global vector
         row, col, val = int(r[0]), int(r[1]), float(r[2])
         if int(col // cluster_size) != current_cluster:
+            vector = {}
             current_cluster = int(col // cluster_size)
             file = open(vector_dir + 'vector_' + str(current_cluster) + '.csv', 'r').readlines()
             for line in file:
