@@ -207,12 +207,9 @@ void MainWindow::krzywe(){
         if(z == 0.0){
             rysujPiksel(img2->bits(), static_cast<int>(x + szer2/2.0), static_cast<int>(y + szer2 / 2.0), 0, 0, 255);
             rysujPiksel(img2->bits(), static_cast<int>(-x + szer2/2.0), static_cast<int>(-y + szer2 / 2.0), 0, 0, 255);
-        } else  if(z > 0.0) {
-            rysujPiksel(img2->bits(), static_cast<int>(x + szer2/2.0), static_cast<int>(y + szer2 / 2.0), 0, 0, 255);
         } else {
-            rysujPiksel(img2->bits(), static_cast<int>(-x + szer2/2.0), static_cast<int>(-y + szer2 / 2.0), 0, 0, 255);
+            rysujPiksel(img2->bits(), static_cast<int>((z > 0 ? 1 : -1) * x + szer2/2.0), static_cast<int>((z > 0 ? 1 : -1) * y + szer2 / 2.0), 0, 0, 255);
         }
-
         t += 0.001;
     }
 }
