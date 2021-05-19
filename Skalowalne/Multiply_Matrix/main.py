@@ -1,27 +1,27 @@
-# TODO Zrobic podzial matrix na plaster i wektor
+import numpy as np
 
-# TODO Wczytywac katalog z plikami w rdd
-# TODO vektor to slownik rzadka
+A = np.array([[1, 2, -3],
+              [6, 8,  0],
+              [0, 0,  3],
+              [4, 0,  0]])
 
-# from __future__ import print_function
-# import sys
-# from pyspark.sql import SparkSession
-#
-# if __name__ == "__main__":
-#     if len(sys.argv) != 1:
-#         print("Usage: main.py", file=sys.stderr)
-#         exit(-1)
-#
-#     spark = SparkSession \
-#         .builder \
-#         .appName("PythonTest") \
-#         .getOrCreate()
-#
-#     spark.sparkContext.setLogLevel("WARN")
-#
-#     out = spark.sparkContext.textFile("Dane")
-#
-#     outWithName = spark.sparkContext.wholeTextFiles("Dane").map(lambda p: test())
-#
-#     for i in outWithName.collect():
-#         print(i)
+B = np.array([[9, 0, 4],
+              [3, 2, 0],
+              [0, 1, 2]])
+print(A.dot(B))
+
+A = np.array([[0, 3.2, 0, 0,  0,    0, 0, 0, 0],
+              [0, 2.5, 0, 0,  0, 10.5, 3, 0, 0],
+              [0,  -1, 0, 0, 16,    0, 0, 0, 0],
+              [0,   0, 1, 7,  0,    0, 0, 0, 8]])
+
+V = np.array([[2],
+              [-3],
+              [0],
+              [9],
+              [1],
+              [2],
+              [2],
+              [0],
+              [1]])
+print(A.dot(V))
