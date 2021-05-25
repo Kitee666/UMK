@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ajax Pogoda</title>
+    <meta charset="utf-8"/>
+    <script>
+		function getData(name) {
+			return new Promise((res, rej) => {
+				const xhttp = new XMLHttpRequest();
+                xhttp.open('GET', `https://api.openweathermap.org/data/2.5/weather?q=${name}&appid=3196eca366bed8e0351aff969a12195e`, true);
+                xhttp.onreadystatechange = function () {
+					if (this.readyState == 4) {
+                        if (this.status == 200) {
+                            res(this);
+                        } else {
+                            rej(this)
+                        }
+                    }
+                };
+                xhttp.send();
+            })
+        }
+		function search() {
+			document.getElementById("error").style.display = "none";
+			getData(document.getElementById("searchName").value)
+				.then(response => JSON.parse(response.responseText))
+					.then(response => {
+						document.getElementById("name").innerText = response.name;
+						document.getElementById("lon").innerText = convertLon(response.coord.lon);
+						document.getElementById("lat").innerText = convertLat(response.coord.lat);
+						document.getElementById("feels_like").innerText = convertTemp(response.main.feels_like);
+						document.getElementById("temp").innerText = convertTemp(response.main.temp);
+						document.getElementById("temp_min").innerText = convertTemp(response.main.temp_min);
+						document.getElementById("temp_max").innerText = convertTemp(response.main.temp_max);
+						document.getElementById("sunrise").innerText = convertDate(response.sys.sunrise);
+						document.getElementById("sunset").innerText = convertDate(response.sys.sunset);
+						document.getElementById("wind").innerText = response.wind.speed.toFixed(1);
+						document.getElementById("direct").innerText = convertDeg(response.wind.deg);
+						document.getElementById("pressure").innerText = response.main.pressure;
+						document.getElementById("humidity").innerText = response.main.humidity;
+						document.getElementById("info").style.display = "block";
+					})
+					.catch(error => {
+						document.getElementById("info").style.display = "none";
+						document.getElementById("error").style.display = "block";
+						console.log(error);
+					})
+		}
+
+        function convertDate(time) {
+            const date = new Date(time * 1000);
+            return date.getHours() + ":" + (date.getMinutes() < 10 ? 0 : "" ) + date.getMinutes()
+        }
+		
+		function convertTemp(temp) {
+			return (temp - 273.15).toFixed(1);
+		}
+		
+		function convertLon(lon) {
+			if (lon >= 0) return lon + "N";
+			else return -lon + "S";
+		}
+		
+		function convertLat(lat) {
+			if (lat >= 0) return lat + "E";
+			else return -lat + "W";
+		}
+		
+		function convertDeg(deg) {
+			let direct = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW', 'N'];
+			return direct[parseInt(deg/45)];
+		}
+    </script>
+</head>
+<body>
+    Pogoda dla podanej lokalizacji:
+	<input type="text" id="searchName" value="Miejscowość">
+	<button onclick="search()">Wyszukaj</button>
+	
+	<div id="info" style="display:none">
+		<h2>Pogoda dla: <span id="name"></span></h2>
+		<h3>Lokalizacja: <span id="lon"></span>, <span id="lat"></span></h3>
+		<h3>Temperatura odczuwalna: <span id="feels_like"></span>&deg;C</h3>
+		<h3>Temperatura: <span id="temp"></span>&deg;C</h3>
+		<h3>Temperatura min: <span id="temp_min"></span>&deg;C</h3>
+		<h3>Temperatura max: <span id="temp_max"</span>&deg;C</h3>
+		<h3>Słońce: <span id="sunrise"></span>, <span id="sunset"></span></h3>
+		<h3>Wiart: <span id="wind"></span>m/s <span id="direct"></span></h3>
+		<h3>Ciśnienie: <span id="pressure"></span> hPa</h3>
+		<h3>Wilgotność: <span id="humidity"></span>%</h3>
+    </div>
+	<div id="error" style="display:none">
+		<h2>Coś poszło nie tak</h2>
+	</div>
+</body>
+
+</html>

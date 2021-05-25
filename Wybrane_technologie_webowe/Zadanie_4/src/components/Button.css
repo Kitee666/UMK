@@ -1,0 +1,26 @@
+.button-wrapper {
+    height: 70px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    font-size: 25px;
+    background-color: #e0e1e6;
+    color: #000000;
+    padding: 5px;
+    flex: 1;
+    outline: 2px solid #000000;
+}
+
+.button-wrapper:active {
+    background-color: #d0d0d5;
+}
+
+.operator {
+    background-color: #ff0000;
+    color: #ffffff;
+}
+
+.operator:active {
+    background-color: #cc0000;
+}

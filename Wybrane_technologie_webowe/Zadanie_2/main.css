@@ -1,0 +1,174 @@
+.theme-1 .container .left, .theme-1 .container .right {
+  font-size: 2rem;
+}
+
+.theme-1 .container .right {
+  position: relative;
+}
+
+.theme-1 .button {
+  border: 0;
+  border-radius: 10px;
+  bottom: 10px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: bold;
+  padding: 1em 2em;
+  position: absolute;
+  right: 10px;
+}
+
+.theme-1 .container {
+  background-color: #f7eb80;
+  border: 1px solid #000;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  height: 500px;
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
+  margin: 0 auto;
+  padding: 1em;
+  width: 50%;
+}
+
+.theme-1 .left {
+  background-color: #497265;
+  color: #fff;
+  height: 100%;
+  width: 69%;
+}
+
+.theme-1 .right {
+  background-color: #82aa91;
+  color: #fff;
+  height: 100%;
+  width: 29%;
+}
+
+.theme-1 .button {
+  background-color: #bc6a49;
+  color: #fff;
+}
+
+.theme-1 .button:hover {
+  background-color: #d7a794;
+}
+
+.theme-2 .container .left, .theme-2 .container .right {
+  font-size: 2rem;
+}
+
+.theme-2 .container .right {
+  position: relative;
+}
+
+.theme-2 .button {
+  border: 0;
+  border-radius: 10px;
+  bottom: 10px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: bold;
+  padding: 1em 2em;
+  position: absolute;
+  right: 10px;
+}
+
+.theme-2 .container {
+  background-color: #e4ada7;
+  border: 1px solid #000;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  height: 500px;
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
+  margin: 0 auto;
+  padding: 1em;
+  width: 50%;
+}
+
+.theme-2 .left {
+  background-color: #d88880;
+  color: #fff;
+  height: 100%;
+  width: 69%;
+}
+
+.theme-2 .right {
+  background-color: #cc6359;
+  color: #fff;
+  height: 100%;
+  width: 29%;
+}
+
+.theme-2 .button {
+  background-color: #481b16;
+  color: #fff;
+}
+
+.theme-2 .button:hover {
+  background-color: #96382e;
+}
+
+.theme-3 .container .left, .theme-3 .container .right {
+  font-size: 2rem;
+}
+
+.theme-3 .container .right {
+  position: relative;
+}
+
+.theme-3 .button {
+  border: 0;
+  border-radius: 10px;
+  bottom: 10px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: bold;
+  padding: 1em 2em;
+  position: absolute;
+  right: 10px;
+}
+
+.theme-3 .container {
+  background-color: #1345cc;
+  border: 1px solid #000;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  height: 500px;
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
+  margin: 0 auto;
+  padding: 1em;
+  width: 50%;
+}
+
+.theme-3 .left {
+  background-color: #80cbd8;
+  color: #fff;
+  height: 100%;
+  width: 69%;
+}
+
+.theme-3 .right {
+  background-color: #02006e;
+  color: #fff;
+  height: 100%;
+  width: 29%;
+}
+
+.theme-3 .button {
+  background-color: #00b37d;
+  color: #fff;
+}
+
+.theme-3 .button:hover {
+  background-color: #1affba;
+}
+/*# sourceMappingURL=main.css.map */

@@ -1,0 +1,2 @@
+RewriteEngine on
+RewriteRule ^login.jpg$ ./getimage.php
