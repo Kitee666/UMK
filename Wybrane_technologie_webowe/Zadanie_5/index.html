@@ -7,7 +7,7 @@
 		function getData(name) {
 			return new Promise((res, rej) => {
 				const xhttp = new XMLHttpRequest();
-                xhttp.open('GET', `https://api.openweathermap.org/data/2.5/weather?q=${name}&appid=3196eca366bed8e0351aff969a12195e`, true);
+                xhttp.open('GET', `https://api.openweathermap.org/data/2.5/weather?q=${name}&appid=${secrecCodeHere}`, true);
                 xhttp.onreadystatechange = function () {
 					if (this.readyState == 4) {
                         if (this.status == 200) {
