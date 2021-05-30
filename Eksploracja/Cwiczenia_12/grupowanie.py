@@ -7,7 +7,7 @@ Created on Sun Jan 10 13:54:12 2021
 
 import pandas as pd
 #Wczytujemy naszą bazę danych 
-ceny=pd.read_csv("C:\\Users\\user\\Documents\\Eksploracja danych\\Informatyka\\Lab12\\ceny.csv",sep=";",decimal=",")
+ceny=pd.read_csv("ceny.csv",sep=";",decimal=",")
 
 # Histogramy - czy nie ma problemów z długimi ogonami
 import matplotlib.pyplot as plt
@@ -48,7 +48,7 @@ import scipy.cluster.hierarchy as shc
 plt.figure(figsize=(10, 7))
 plt.title("Dendrogram")
 dendrogram = shc.dendrogram(shc.linkage(centroids,metric='euclidean', method='average'))
-
+plt.show()
 #Algorytm 
 from sklearn.cluster import AgglomerativeClustering
 cluster_new_Birch = AgglomerativeClustering(n_clusters=3, affinity='euclidean', linkage='average') #parametry algorytmu
