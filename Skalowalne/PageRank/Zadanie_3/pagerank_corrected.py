@@ -3,15 +3,30 @@ import sys
 from pyspark.sql import SparkSession
 
 
-def multiply(row, vect):
-    if int(row[1]) in vect:
-        return [(int(row[0]), float(row[2]) * vect[int(row[1])])]
-    return []
+# def mapper(r, cluster_size):
+#     out = []
+#     row = int(r[0])
+#     val = float(r[1])
+#     for edge in range(2, len(r)):
+#         if r[edge] is not None:
+#             out.append((int(row // cluster_size), (int(r[edge]), row, 1.0 / val)))
+#     return out
+
+
+def mapper(r):
+    out = []
+    row = int(r[0])
+    val = float(r[1])
+    for edge in range(2, len(r)):
+        if r[edge] is not None:
+            out.append((row, (int(r[edge]), 1.0 / val)))
+    return out
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        print("Usage: pagerank_corrected.py directory_matrix confident", file=sys.stderr)
+    if len(sys.argv) != 5:
+        print("Usage: pagerank_corrected.py directory_matrix confident vector_files block_size",
+              file=sys.stderr)
         exit(-1)
 
     spark = SparkSession \
@@ -21,24 +36,40 @@ if __name__ == "__main__":
 
     spark.sparkContext.setLogLevel("WARN")
 
-    # zapisac vektor do pliku
+    cluster_size = int(sys.argv[4])
 
-    #Do 1,2,4
-    #vector = {0: 0.25, 1: 0.25, 2: 0.25, 3: 0.25}
-    #Do 3
-    #vector = {0: 0.2, 1: 0.2, 2: 0.2, 3: 0.2, 4: 0.2}
-    #Do 5
-    vector = {0: 0.33333333, 1: 0.33333333, 2: 0.33333333}
+    # matrix = spark.read.csv(sys.argv[1], header=False, sep=";") \
+    #     .rdd \
+    #     .flatMap(lambda r: mapper(r, cluster_size))
+
+    matrix = spark.read.csv(sys.argv[1], header=False, sep=";") \
+        .rdd \
+        .flatMap(mapper)
+
+    vector = spark.read.csv(sys.argv[3], header=False, sep=";") \
+        .rdd
+
     beta = 0.8
     confident = int(sys.argv[2])
 
+    # print(vector.collectAsMap())
+    # for _ in range(50):
+    #     vector = vector \
+    #         .map(lambda p: (int(int(p[0]) // cluster_size), (int(p[0]), float(p[1])))) \
+    #         .join(matrix) \
+    #         .map(lambda r: (r[1][1][0], (r[1][0][1] * r[1][1][2] if r[1][0][0] == r[1][1][1] else 0))) \
+    #         .reduceByKey(lambda a, b: a + b) \
+    #         .map(lambda p: (p[0], beta * p[1] + ((1 - beta) if p[0] == confident else 0)))
+    #
+    #     print(vector.collectAsMap())
+
+    print(vector.collectAsMap())
     for _ in range(50):
-        vector = spark.sparkContext.textFile(sys.argv[1]) \
-            .map(lambda line: line.strip().split(';')) \
-            .flatMap(lambda r: multiply(r, vector)) \
+        vector = vector \
+            .join(matrix) \
+            .map(lambda r: (r[1][1][0], (r[1][0] * r[1][1][1]))) \
             .reduceByKey(lambda a, b: a + b) \
-            .map(lambda p: (p[0], beta * p[1] + ((1 - beta) if p[0] == confident else 0))) \
-            .collectAsMap()
-        print(vector)
+            .map(lambda p: (p[0], beta * p[1] + ((1 - beta) if p[0] == confident else 0)))
+        print(vector.collectAsMap())
 
     spark.stop()

@@ -10,8 +10,8 @@ def multiply(row, vect):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Usage: pagerank_taxation.py directory_matrix", file=sys.stderr)
+    if len(sys.argv) != 3:
+        print("Usage: pagerank_taxation.py directory_matrix connection_number", file=sys.stderr)
         exit(-1)
 
     spark = SparkSession \
@@ -21,24 +21,22 @@ if __name__ == "__main__":
 
     spark.sparkContext.setLogLevel("WARN")
 
-    #Do 1,2,4
-    #vector = {0: 0.25, 1: 0.25, 2: 0.25, 3: 0.25}
-    #Do 3
-    #vector = {0: 0.2, 1: 0.2, 2: 0.2, 3: 0.2, 4: 0.2}
-    #Do 5
-    vector = {0: 0.33333333, 1: 0.33333333, 2: 0.33333333}
-    dist = len(vector)
+    matrix = spark.read.csv(sys.argv[1], header=False, sep=";").rdd
+
+    vector = dict((i, 1.0 / float(sys.argv[2])) for i in range(int(sys.argv[2])))
+
+    dist = int(sys.argv[2])
+
     beta = 0.8
 
+    print(vector)
     for _ in range(50):
-        vector = spark.sparkContext.textFile(sys.argv[1]) \
-            .map(lambda line: line.strip().split(';')) \
+        vector = matrix \
             .flatMap(lambda r: multiply(r, vector)) \
             .reduceByKey(lambda a, b: a + b) \
             .map(lambda v: (v[0], beta * v[1] + (1 - beta) * 1 / dist)) \
             .collectAsMap()
 
         print(vector)
-        dist = len(vector)
 
     spark.stop()

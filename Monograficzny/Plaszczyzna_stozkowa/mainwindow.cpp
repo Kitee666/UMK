@@ -205,49 +205,18 @@ void MainWindow::krzywe(){
         pkt_1 = *(it);
         rysujPiksel(img->bits(), static_cast<int>(pkt_1.first), static_cast<int>(pkt_1.second), 0, 0, 255);
 
-        x2 = x = (1 - t) * (1- t) * (a.first - szer / 2.0) + 2 * (1 - t) * t * (b.first - szer / 2.0) + t * t * (c.first - szer / 2.0);
-        y2 = y = (1 - t) * (1- t) * (a.second - wys / 2.0) + 2 * (1 - t) * t * (b.second - wys / 2.0) + t * t * (c.second - wys / 2.0);
-        z_old = radius;
 
-        odl = sqrt(x2 * x2 + y2 * y2 + 200 * 200);
-        x2 = x2 * 200 / odl;
-        y2 = y2 * 200 / odl;
-        if(z_old == 0.0){
-            rysujPiksel(img->bits(), static_cast<int>(x2 + szer2/2.0), static_cast<int>(y2 + szer2 / 2.0), 255, 0, 0);
-            rysujPiksel(img->bits(), static_cast<int>(-x2 + szer2/2.0), static_cast<int>(-y2 + szer2 / 2.0), 255, 0, 0);
-        } else {
-            rysujPiksel(img->bits(), static_cast<int>((z_old > 0 ? 1 : -1) * x2 + szer2/2.0), static_cast<int>((z_old > 0 ? 1 : -1) * y2 + szer2 / 2.0), 255, 0, 0);
-        }
+        /* Dopełnienie
+           * Przerobic na QVector3D
+        QVector3D b0(a.first, a.second, radius);
+        */
 
-        x = cos(alfa) * x - sin(alfa) * z_old;
-        z = sin(alfa) * x + cos(alfa) * z_old;
-        odl = sqrt(x * x + y * y + z * z);
-        x = x * radius / odl;
-        y = y * radius / odl;
-        if(z == 0.0){
-            rysujPiksel(img2->bits(), static_cast<int>(x + szer2/2.0), static_cast<int>(y + szer2 / 2.0), 0, 0, 255);
-            rysujPiksel(img2->bits(), static_cast<int>(-x + szer2/2.0), static_cast<int>(-y + szer2 / 2.0), 0, 0, 255);
-        } else {
-            rysujPiksel(img2->bits(), static_cast<int>((z > 0 ? 1 : -1) * x + szer2/2.0), static_cast<int>((z > 0 ? 1 : -1) * y + szer2 / 2.0), 0, 0, 255);
-        }
-
-        x2 = x = (1 - t) * (1- t) * (a.first - szer / 2.0) - 2 * (1 - t) * t * (b.first - szer / 2.0) + t * t * (c.first - szer / 2.0);
-        y2 = y = (1 - t) * (1- t) * (a.second - wys / 2.0) - 2 * (1 - t) * t * (b.second - wys / 2.0) + t * t * (c.second - wys / 2.0);
+        x2 = (1 - t) * (1 - t) * (a.first - szer / 2.0) - 2 * (1 - t) * t * (b.first - szer / 2.0) + t * t * (c.first - szer / 2.0);
+        y = (1 - t) * (1 - t) * (a.second - wys / 2.0) - 2 * (1 - t) * t * (b.second - wys / 2.0) + t * t * (c.second - wys / 2.0);
         z_old = (1 - 2 * t) * (1 - 2 * t) * radius;
 
-        z = (1 - 2 * t) * (1 - 2 * t) * 200;
-        odl = sqrt(x2 * x2 + y2 * y2 + z * z);
-        x2 = x2 * 200 / odl;
-        y2 = y2 * 200 / odl;
-        if(z == 0.0){
-            rysujPiksel(img->bits(), static_cast<int>(x2 + szer2/2.0), static_cast<int>(y2 + szer2 / 2.0), 255, 255, 0);
-            rysujPiksel(img->bits(), static_cast<int>(-x2 + szer2/2.0), static_cast<int>(-y2 + szer2 / 2.0), 255, 255, 0);
-        } else {
-            rysujPiksel(img->bits(), static_cast<int>((z > 0 ? 1 : -1) * x2 + szer2/2.0), static_cast<int>((z > 0 ? 1 : -1) * y2 + szer2 / 2.0), 255, 255, 0);
-        }
-
-        x = cos(alfa) * x - sin(alfa) * z_old;
-        z = sin(alfa) * x + cos(alfa) * z_old;
+        z = sin(alfa) * x2 + cos(alfa) * z_old;
+        x = cos(alfa) * x2 - sin(alfa) * z_old;
         odl = sqrt(x * x + y * y + z * z);
         x = x * radius / odl;
         y = y * radius / odl;
@@ -256,6 +225,24 @@ void MainWindow::krzywe(){
             rysujPiksel(img2->bits(), static_cast<int>(-x + szer2/2.0), static_cast<int>(-y + szer2 / 2.0), 0, 255, 0);
         } else {
             rysujPiksel(img2->bits(), static_cast<int>((z > 0 ? 1 : -1) * x + szer2/2.0), static_cast<int>((z > 0 ? 1 : -1) * y + szer2 / 2.0), 0, 255, 0);
+        }
+
+        /* Bazowa */
+        x2 = (1 - t) * (1 - t) * (a.first - szer / 2.0) + 2 * (1 - t) * t * (b.first - szer / 2.0) + t * t * (c.first - szer / 2.0);
+        y = (1 - t) * (1 - t) * (a.second - wys / 2.0) + 2 * (1 - t) * t * (b.second - wys / 2.0) + t * t * (c.second - wys / 2.0);
+        z_old = radius;
+
+
+        z = sin(alfa) * x2 + cos(alfa) * z_old;
+        x = cos(alfa) * x2 - sin(alfa) * z_old;
+        odl = sqrt(x * x + y * y + z * z);
+        x = x * radius / odl;
+        y = y * radius / odl;
+        if(z == 0.0){
+            rysujPiksel(img2->bits(), static_cast<int>(x + szer2/2.0), static_cast<int>(y + szer2 / 2.0), 0, 0, 255);
+            rysujPiksel(img2->bits(), static_cast<int>(-x + szer2/2.0), static_cast<int>(-y + szer2 / 2.0), 0, 0, 255);
+        } else {
+            rysujPiksel(img2->bits(), static_cast<int>((z > 0 ? 1 : -1) * x + szer2/2.0), static_cast<int>((z > 0 ? 1 : -1) * y + szer2 / 2.0), 0, 0, 255);
         }
 
         t += 0.00005;
