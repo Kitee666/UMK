@@ -20,18 +20,21 @@ if __name__ == "__main__":
         .distinct()
 
     start = spark.sparkContext.parallelize(['YTO', 'YYZ', 'YTZ', 'YHM', 'YKF']) \
-        .map(lambda it: (it, None))
+        .map(lambda it: (it, 0))
+    toVisit = start.map(lambda it: (it[0], 0))
 
     k = int(sys.argv[2])
     for i in range(k):
         print("Obrot %d" % (i + 1))
 
         next_station = routes \
-            .join(start) \
-            .map(lambda it: (it[1][0], None))
+            .join(toVisit) \
+            .map(lambda it: (it[1][0], it[1][1] + 1))
+
+        toVisit = next_station.subtractByKey(start)
 
         start = start \
             .union(next_station) \
-            .distinct()
+            .reduceByKey(lambda a, b: min(a, b))
 
     print("Zebrano %d wyników" % start.count())

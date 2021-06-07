@@ -20,27 +20,24 @@ if __name__ == "__main__":
         .distinct()
 
     start = spark.sparkContext.parallelize(['BZG', 'WAW', 'WMI']) \
-        .map(lambda it: (it, None))
+        .map(lambda it: (it, 0))
+    toVisit = start.map(lambda it: (it[0], 0))
 
-    counter = 0
-    oldLen = 0
-    newLen = start.count()
-    while oldLen != newLen:
-        print("Obrot %d" % (counter + 1))
-
-        counter += 1
-        oldLen = newLen
+    i = 0
+    counter = 3
+    while counter > 0:
+        print("Obrot %d" % (i + 1))
+        print("Odlot z %d" % counter)
         next_station = routes \
-            .join(start) \
-            .map(lambda it: (it[1][0], None))
+            .join(toVisit) \
+            .map(lambda it: (it[1][0], it[1][1] + 1))
+
+        toVisit = next_station.subtractByKey(start)
+        counter = toVisit.count()
+        i += 1
 
         start = start \
             .union(next_station) \
-            .distinct()
-
-        newLen = start.count()
-        print("Aktualnie zebrano %d danych" % newLen)
+            .reduceByKey(lambda a, b: min(a, b))
 
     print("Zebrano %d wyników" % start.count())
-
-    spark.stop()
