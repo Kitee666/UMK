@@ -15,11 +15,11 @@ from pyspark.sql import SparkSession
 
 def mapper(r):
     out = []
-    row = int(r[0])
+    key = int(r[0])
     val = float(r[1])
     for edge in range(2, len(r)):
         if r[edge] is not None:
-            out.append((row, (int(r[edge]), 1.0 / val)))
+            out.append((key, (int(r[edge]), 1.0 / val)))
     return out
 
 
